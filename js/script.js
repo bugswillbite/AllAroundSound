@@ -1,5 +1,22 @@
 import { wix, imgUrl } from './wix.js';
 
+// ---------- HELPERS ----------
+function toParagraphs(value) {
+  if (!value) return [];
+  value = String(value);
+  if (!/<[a-z][\s\S]*>/i.test(value)) {
+    return value.split(/\n+|\s*\|\|\s*/).map(s => s.trim()).filter(Boolean);
+  }
+  const doc = new DOMParser().parseFromString(value, 'text/html');
+  const blocks = [...doc.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li')];
+  const parts = blocks.length
+    ? blocks.map(b => b.textContent)
+    : [doc.body.textContent];
+  return parts.map(t => t.replace(/\u00a0/g, ' ').trim()).filter(Boolean);
+}
+
+const plain = value => toParagraphs(value).join(' ');
+
 // ---------- SERVICES TABS ----------
 const serviceTabs = document.querySelectorAll('.service-tab');
 const servicePanels = document.querySelectorAll('.service-panel');
@@ -49,12 +66,12 @@ if (quoteText && quoteName && quoteCount && quotePrev && quoteNext) {
 }
 
 async function loadTestimonials() {
-  if (!quoteText) return; // not the page with the carousel
+  if (!quoteText) return; 
   try {
     const { items: rows } = await wix.items.query('Testimonials')
       .eq('visible', true).ascending('order').limit(100).find();
     if (!rows.length) return;
-    testimonials = rows.map(r => ({ quote: r.quote, name: r.name }));
+    testimonials = rows.map(r => ({ quote: plain(r.quote), name: plain(r.name) }));
     quoteIndex = 0;
     renderQuote();
   } catch (err) {
@@ -63,21 +80,8 @@ async function loadTestimonials() {
 }
 loadTestimonials();
 
-// ---------- TEAM (from Wix CMS) ----------
+// ---------- TEAM ----------
 const teamGrid = document.querySelector('.team-grid');
-
-function toParagraphs(value) {
-  if (!value) return [];
-  if (!/<[a-z][\s\S]*>/i.test(value)) {
-    return value.split(/\n+|\s*\|\|\s*/).map(s => s.trim()).filter(Boolean);
-  }
-  const doc = new DOMParser().parseFromString(value, 'text/html');
-  const blocks = [...doc.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li')];
-  const parts = blocks.length
-    ? blocks.map(b => b.textContent.trim())
-    : [doc.body.textContent.trim()];
-  return parts.filter(Boolean);
-}
 
 function buildTeamCard(m) {
   const card = document.createElement('div');
@@ -87,25 +91,25 @@ function buildTeamCard(m) {
     const img = document.createElement('img');
     img.className = 'team-photo';
     img.src = imgUrl(m.photo, 600, 600);
-    img.alt = m.name;
+    img.alt = plain(m.name);
     img.loading = 'lazy';
     img.decoding = 'async';
     card.append(img);
   }
 
   const h3 = document.createElement('h3');
-  h3.textContent = m.name;
+  h3.textContent = plain(m.name);
   const role = document.createElement('span');
   role.className = 'team-role';
-  role.textContent = m.role;
+  role.textContent = plain(m.role);
 
   const bio = document.createElement('div');
   bio.className = 'team-bio';
   const p = document.createElement('p');
-  p.textContent = m.bioShort;
+  p.textContent = plain(m.bioShort);
   bio.append(p);
 
-  const more = (m.bioMore || '').split(/\n+|\s*\|\|\s*/).map(s => s.trim()).filter(Boolean);
+  const more = toParagraphs(m.bioMore);
   if (more.length) {
     const details = document.createElement('details');
     details.className = 'team-bio-more';
@@ -129,7 +133,7 @@ async function loadTeam() {
   try {
     const { items: rows } = await wix.items.query('Team')
       .eq('visible', true).ascending('order').limit(50).find();
-    if (!rows.length) return;               // keep the hardcoded cards as a fallback
+    if (!rows.length) return;               
     teamGrid.replaceChildren(...rows.map(buildTeamCard));
   } catch (err) {
     console.error('Could not load team:', err);
@@ -249,7 +253,6 @@ reviewForm?.addEventListener('input', clearReviewError);
 reviewForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
 
-  // trim first so a name or review of only spaces doesn't count
   const name = reviewName.value.trim();
   const review = reviewText.value.trim();
 
@@ -392,7 +395,7 @@ if (answerBox && records.length) {
 
 
   /* =========================================
-     CLICK RECORD → SHOW ANSWER
+     CLICK RECORD -> SHOW ANSWER
   ========================================= */
 
   records.forEach((record) => {
