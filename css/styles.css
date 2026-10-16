@@ -911,6 +911,28 @@ main>section{padding:150px 7vw 100px}
   color: #8faab3;
 }
 
+.contact-form label.review-consent {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #c1d2d8;
+  cursor: pointer;
+}
+
+.contact-form .review-consent input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  padding: 0;
+  margin-top: 1px;
+  accent-color: var(--sky);
+  cursor: pointer;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
