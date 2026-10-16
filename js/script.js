@@ -66,6 +66,19 @@ loadTestimonials();
 // ---------- TEAM (from Wix CMS) ----------
 const teamGrid = document.querySelector('.team-grid');
 
+function toParagraphs(value) {
+  if (!value) return [];
+  if (!/<[a-z][\s\S]*>/i.test(value)) {
+    return value.split(/\n+|\s*\|\|\s*/).map(s => s.trim()).filter(Boolean);
+  }
+  const doc = new DOMParser().parseFromString(value, 'text/html');
+  const blocks = [...doc.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li')];
+  const parts = blocks.length
+    ? blocks.map(b => b.textContent.trim())
+    : [doc.body.textContent.trim()];
+  return parts.filter(Boolean);
+}
+
 function buildTeamCard(m) {
   const card = document.createElement('div');
   card.className = 'team-card glass-panel';
