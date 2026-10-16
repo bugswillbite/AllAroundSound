@@ -80,7 +80,7 @@ async function loadTestimonials() {
 }
 loadTestimonials();
 
-// ---------- TEAM ----------
+// ---------- TEAM (from Wix CMS) ----------
 const teamGrid = document.querySelector('.team-grid');
 
 function buildTeamCard(m) {
@@ -234,6 +234,7 @@ const reviewSuccess = document.getElementById('review-success');
 const reviewReset = document.getElementById('review-reset');
 const reviewName = document.getElementById('review-name');
 const reviewText = document.getElementById('review-text');
+const reviewPublic = document.getElementById('review-public');
 const reviewError = document.getElementById('review-error');
 
 function showReviewError(message, field) {
@@ -279,7 +280,11 @@ reviewForm?.addEventListener('submit', async (event) => {
   `;
 
   try {
-    await wix.items.insert('ReviewSubmissions', { name, review });
+    await wix.items.insert('ReviewSubmissions', {
+      name,
+      review,
+      allowPublic: Boolean(reviewPublic?.checked)
+    });
   } catch (err) {
     console.error('Review failed:', err);
     submitButton.disabled = false;
